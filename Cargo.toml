@@ -1,0 +1,7 @@
+[package]
+name = "non_empty"
+version = "1.0.0"
+edition = "2021"
+description = "Non empty collections"
+authors = ["Grégory Marti <greg.marti@gmail.com>"]
+repository = "https://github.com/gmarti/non_empty"
