@@ -132,6 +132,12 @@ impl<T> Extend<T> for NonEmptyVec<T> {
     }
 }
 
+impl<T: Clone> From<&NonEmptySlice<T>> for NonEmptyVec<T> {
+    fn from(slice: &NonEmptySlice<T>) -> Self {
+        slice.to_non_empty_vec()
+    }
+}
+
 impl<T> TryFrom<Vec<T>> for NonEmptyVec<T> {
     type Error = error::Empty;
 
