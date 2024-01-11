@@ -9,8 +9,18 @@ pub struct NonEmptySlice<T> {
 }
 
 mod error {
+    use std::{error::Error, fmt};
+
     #[derive(Debug)]
     pub struct Empty;
+
+    impl fmt::Display for Empty {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "empty slice")
+        }
+    }
+
+    impl Error for Empty {}
 }
 
 impl<T> NonEmptySlice<T> {
