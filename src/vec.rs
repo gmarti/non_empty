@@ -1,4 +1,4 @@
-use std::{fmt, ops::Deref};
+use std::{fmt, num::NonZeroUsize, ops::Deref};
 
 use super::slice::NonEmptySlice;
 
@@ -84,6 +84,16 @@ impl<T> NonEmptyVec<T> {
     pub fn into_boxed_slice(self) -> Box<NonEmptySlice<T>> {
         let b = self.inner.into_boxed_slice();
         unsafe { NonEmptySlice::unchecked_boxed(b) }
+    }
+
+    pub fn truncate(&mut self, len: NonZeroUsize) {
+        self.inner.truncate(len.get())
+    }
+}
+
+impl<T: PartialEq> NonEmptyVec<T> {
+    pub fn dedup(&mut self) {
+        self.inner.dedup();
     }
 }
 
@@ -284,5 +294,39 @@ mod tests {
         let non_empty_vec = non_empty_vec![Test(0)];
 
         assert!(non_empty_vec.first().0 == 0);
+    }
+
+    #[test]
+    fn truncate() {
+        let mut v = non_empty_vec![1, 2];
+        v.truncate(NonZeroUsize::new(1).unwrap());
+        assert_eq!(v, non_empty_vec![1]);
+
+        let mut v = non_empty_vec![1, 2];
+        v.truncate(NonZeroUsize::new(2).unwrap());
+        assert_eq!(v, non_empty_vec![1, 2]);
+
+        let mut v = non_empty_vec![1, 2, 3];
+        v.truncate(NonZeroUsize::new(2).unwrap());
+        assert_eq!(v, non_empty_vec![1, 2]);
+    }
+
+    #[test]
+    fn dedup() {
+        let mut v = non_empty_vec![1, 2];
+        v.dedup();
+        assert_eq!(v, non_empty_vec![1, 2]);
+
+        let mut v = non_empty_vec![1, 1];
+        v.dedup();
+        assert_eq!(v, non_empty_vec![1]);
+
+        let mut v = non_empty_vec![1];
+        v.dedup();
+        assert_eq!(v, non_empty_vec![1]);
+
+        let mut v = non_empty_vec![1, 2, 1];
+        v.dedup();
+        assert_eq!(v, non_empty_vec![1, 2, 1]);
     }
 }
