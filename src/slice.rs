@@ -79,14 +79,14 @@ impl<T> NonEmptySlice<T> {
 }
 
 impl<T: Clone> NonEmptySlice<T> {
-    pub fn to_vec(&self) -> NonEmptyVec<T> {
+    pub fn to_non_empty_vec(&self) -> NonEmptyVec<T> {
         self.inner.to_vec().try_into().unwrap()
     }
 }
 
 impl<T: Clone> Clone for Box<NonEmptySlice<T>> {
     fn clone(&self) -> Self {
-        self.to_vec().into_boxed_slice()
+        self.to_non_empty_vec().into_boxed_slice()
     }
 }
 
