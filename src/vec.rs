@@ -1,4 +1,4 @@
-use std::{fmt, ops::Deref};
+use std::{fmt, num::NonZeroUsize, ops::Deref};
 
 use super::slice::NonEmptySlice;
 
@@ -8,8 +8,18 @@ pub struct NonEmptyVec<T> {
 }
 
 mod error {
+    use std::{error::Error, fmt};
+
     #[derive(Debug)]
     pub struct Empty;
+
+    impl fmt::Display for Empty {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "empty vec")
+        }
+    }
+
+    impl Error for Empty {}
 }
 
 impl<T> NonEmptyVec<T> {
@@ -75,6 +85,16 @@ impl<T> NonEmptyVec<T> {
         let b = self.inner.into_boxed_slice();
         unsafe { NonEmptySlice::unchecked_boxed(b) }
     }
+
+    pub fn truncate(&mut self, len: NonZeroUsize) {
+        self.inner.truncate(len.get())
+    }
+}
+
+impl<T: PartialEq> NonEmptyVec<T> {
+    pub fn dedup(&mut self) {
+        self.inner.dedup();
+    }
 }
 
 impl<T: Clone> NonEmptyVec<T> {
@@ -109,6 +129,12 @@ where
 impl<T> Extend<T> for NonEmptyVec<T> {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         self.inner.extend(iter);
+    }
+}
+
+impl<T: Clone> From<&NonEmptySlice<T>> for NonEmptyVec<T> {
+    fn from(slice: &NonEmptySlice<T>) -> Self {
+        slice.to_non_empty_vec()
     }
 }
 
@@ -274,5 +300,39 @@ mod tests {
         let non_empty_vec = non_empty_vec![Test(0)];
 
         assert!(non_empty_vec.first().0 == 0);
+    }
+
+    #[test]
+    fn truncate() {
+        let mut v = non_empty_vec![1, 2];
+        v.truncate(NonZeroUsize::new(1).unwrap());
+        assert_eq!(v, non_empty_vec![1]);
+
+        let mut v = non_empty_vec![1, 2];
+        v.truncate(NonZeroUsize::new(2).unwrap());
+        assert_eq!(v, non_empty_vec![1, 2]);
+
+        let mut v = non_empty_vec![1, 2, 3];
+        v.truncate(NonZeroUsize::new(2).unwrap());
+        assert_eq!(v, non_empty_vec![1, 2]);
+    }
+
+    #[test]
+    fn dedup() {
+        let mut v = non_empty_vec![1, 2];
+        v.dedup();
+        assert_eq!(v, non_empty_vec![1, 2]);
+
+        let mut v = non_empty_vec![1, 1];
+        v.dedup();
+        assert_eq!(v, non_empty_vec![1]);
+
+        let mut v = non_empty_vec![1];
+        v.dedup();
+        assert_eq!(v, non_empty_vec![1]);
+
+        let mut v = non_empty_vec![1, 2, 1];
+        v.dedup();
+        assert_eq!(v, non_empty_vec![1, 2, 1]);
     }
 }
