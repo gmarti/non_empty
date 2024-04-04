@@ -3,6 +3,7 @@ use std::{fmt, ops::Deref};
 use super::slice::NonEmptySlice;
 
 #[derive(Clone, PartialEq, Eq)]
+#[repr(transparent)]
 pub struct NonEmptyVec<T> {
     inner: Vec<T>,
 }
@@ -124,29 +125,10 @@ impl<T> TryFrom<Vec<T>> for NonEmptyVec<T> {
     }
 }
 
-impl<T: fmt::Debug> fmt::Debug for NonEmptyVec<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&*self.inner, f)
-    }
-}
 
-impl<T> IntoIterator for NonEmptyVec<T> {
-    type Item = T;
-    type IntoIter = std::vec::IntoIter<T>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.inner.into_iter()
-    }
-}
-
-impl<'a, T> IntoIterator for &'a NonEmptyVec<T> {
-    type Item = &'a T;
-    type IntoIter = std::slice::Iter<'a, T>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter()
-    }
-}
+inner_vec_iterator!(NonEmptyVec);
+inner_iterator!(NonEmptyVec);
+inner_debug!(NonEmptyVec);
 
 impl<T> Deref for NonEmptyVec<T> {
     type Target = NonEmptySlice<T>;
@@ -160,10 +142,10 @@ impl<T> Deref for NonEmptyVec<T> {
 #[macro_export]
 macro_rules! non_empty_vec {
    ($($x:expr),+ $(,)?) => {{
-        $crate::NonEmptyVec::try_from(vec![$($x),+]).unwrap()
+        NonEmptyVec::try_from(vec![$($x),+]).unwrap()
    }};
     ($h:expr) => {
-        $crate::NonEmptyVec::one($h)
+        NonEmptyVec::one($h)
     };
 }
 

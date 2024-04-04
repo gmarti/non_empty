@@ -1,5 +1,5 @@
-mod slice;
-mod vec;
+#[macro_use]
+mod macros;
 
-pub use slice::NonEmptySlice;
-pub use vec::NonEmptyVec;
+mod non_empty;
+mod sorted;

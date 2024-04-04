@@ -80,29 +80,9 @@ impl<T: Clone> Clone for Box<NonEmptySlice<T>> {
     }
 }
 
-impl<T: fmt::Debug> fmt::Debug for NonEmptySlice<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&self.inner, f)
-    }
-}
-
-impl<'a, T> IntoIterator for &'a NonEmptySlice<T> {
-    type Item = &'a T;
-    type IntoIter = std::slice::Iter<'a, T>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter()
-    }
-}
-
-impl<T> Deref for NonEmptySlice<T> {
-    type Target = [T];
-
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
+inner_debug!(NonEmptySlice);
+inner_iterator!(NonEmptySlice);
+inner_deref_slice!(NonEmptySlice);
 
 impl<'a, T> TryFrom<&'a [T]> for &'a NonEmptySlice<T> {
     type Error = error::Empty;
