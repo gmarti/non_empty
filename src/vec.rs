@@ -1,4 +1,8 @@
-use std::{fmt, num::NonZeroUsize, ops::Deref};
+use std::{
+    fmt,
+    num::NonZeroUsize,
+    ops::{Deref, DerefMut},
+};
 
 use super::slice::NonEmptySlice;
 
@@ -67,6 +71,10 @@ impl<T> NonEmptyVec<T> {
 
     pub fn as_non_empty_slice(&self) -> &NonEmptySlice<T> {
         unsafe { NonEmptySlice::new_unchecked(&self.inner) }
+    }
+
+    pub fn as_non_empty_slice_mut(&mut self) -> &mut NonEmptySlice<T> {
+        unsafe { NonEmptySlice::new_unchecked_mut(&mut self.inner) }
     }
 
     pub fn as_slice(&self) -> &[T] {
@@ -180,6 +188,12 @@ impl<T> Deref for NonEmptyVec<T> {
     #[inline]
     fn deref(&self) -> &Self::Target {
         self.as_non_empty_slice()
+    }
+}
+
+impl<T> DerefMut for NonEmptyVec<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.as_non_empty_slice_mut()
     }
 }
 

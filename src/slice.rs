@@ -39,6 +39,13 @@ impl<T> NonEmptySlice<T> {
         &*(slice as *const [T] as *const NonEmptySlice<T>)
     }
 
+    pub(super) unsafe fn new_unchecked_mut(slice: &mut [T]) -> &mut NonEmptySlice<T> {
+        debug_assert!(!slice.is_empty());
+        // SAFETY: This type is `repr(transparent)`, so we can safely
+        // cast the references like this.
+        &mut *(slice as *mut [T] as *mut NonEmptySlice<T>)
+    }
+
     pub(super) unsafe fn unchecked_boxed(slice: Box<[T]>) -> Box<Self> {
         debug_assert!(!slice.is_empty());
         // SAFETY: This type is `repr(transparent)`, so we can safely
@@ -75,6 +82,10 @@ impl<T> NonEmptySlice<T> {
 
     pub fn as_slice(&self) -> &[T] {
         &self.inner
+    }
+
+    pub fn reverse(&mut self) {
+        self.inner.reverse()
     }
 }
 
@@ -164,6 +175,16 @@ mod tests {
 
         assert_eq!(multiple.split_first(), (&10, &[20, 30, 40, 50][..]));
         assert_eq!(multiple.split_last(), (&[10, 20, 30, 40][..], &50));
+    }
+
+    #[test]
+    fn reverse() {
+        let multiple: &mut NonEmptySlice<_> = &mut non_empty_vec![10, 20, 30, 40, 50];
+        let reverse: &NonEmptySlice<_> = &non_empty_vec![50, 40, 30, 20, 10];
+
+        multiple.reverse();
+
+        assert_eq!(multiple, reverse);
     }
 
     #[test]
