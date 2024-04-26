@@ -19,6 +19,28 @@ impl<'a, T> NonEmptyIter<'a, T> {
     }
 }
 
+impl<'a, T> Iterator for NonEmptyIter<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+}
+
+impl<'a, T> ExactSizeIterator for NonEmptyIter<'a, T> {
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
+impl<'a, T> Deref for NonEmptyIter<'a, T> {
+    type Target = Iter<'a, T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 pub struct NonEmptyMap<I, F> {
     iter: I,
     f: F,
@@ -36,6 +58,15 @@ where
     }
 }
 
+impl<'a, B, I: ExactSizeIterator, F> ExactSizeIterator for NonEmptyMap<I, F>
+where
+    F: FnMut(I::Item) -> B,
+{
+    fn len(&self) -> usize {
+        self.iter.len()
+    }
+}
+
 impl<I, F> NonEmptyMap<I, F> {
     fn new(iter: I, f: F) -> NonEmptyMap<I, F> {
         NonEmptyMap { iter, f }
@@ -48,22 +79,6 @@ where
 {
     pub fn collect(self) -> NonEmptyVec<B> {
         NonEmptyVec::try_from(self.iter.0.map(self.f).collect::<Vec<_>>()).unwrap()
-    }
-}
-
-impl<'a, T> Iterator for NonEmptyIter<'a, T> {
-    type Item = &'a T;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.next()
-    }
-}
-
-impl<'a, T> Deref for NonEmptyIter<'a, T> {
-    type Target = Iter<'a, T>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
     }
 }
 
