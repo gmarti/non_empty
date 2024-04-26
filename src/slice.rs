@@ -1,4 +1,4 @@
-use std::{fmt, ops::Deref};
+use std::{fmt, num::NonZeroUsize, ops::Deref};
 
 use super::NonEmptyVec;
 
@@ -54,6 +54,10 @@ impl<T> NonEmptySlice<T> {
         // so it's safer to use methods to convert to/from raw pointers.
         let ptr = Box::into_raw(slice) as *mut Self;
         Box::from_raw(ptr)
+    }
+
+    pub fn non_zero_len(&self) -> NonZeroUsize {
+        self.inner.len().try_into().unwrap()
     }
 
     pub fn first(&self) -> &T {

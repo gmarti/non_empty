@@ -37,6 +37,10 @@ impl<T> NonEmptyVec<T> {
         NonEmptyVec { inner }
     }
 
+    pub fn non_zero_len(&self) -> NonZeroUsize {
+        self.inner.len().try_into().unwrap()
+    }
+
     pub fn first(&self) -> &T {
         &self.inner[0]
     }
