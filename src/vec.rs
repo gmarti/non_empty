@@ -4,6 +4,8 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
+use crate::slice::NonEmptyIter;
+
 use super::slice::NonEmptySlice;
 
 #[derive(Clone, PartialEq, Eq)]
@@ -101,6 +103,10 @@ impl<T> NonEmptyVec<T> {
     pub fn truncate(&mut self, len: NonZeroUsize) {
         self.inner.truncate(len.get())
     }
+
+    pub fn iter(&self) -> NonEmptyIter<'_, T> {
+        NonEmptyIter::new_unchecked(self.inner.iter())
+    }
 }
 
 impl<T: PartialEq> NonEmptyVec<T> {
@@ -182,7 +188,7 @@ impl<'a, T> IntoIterator for &'a NonEmptyVec<T> {
     type IntoIter = std::slice::Iter<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.iter()
+        self.inner.iter()
     }
 }
 
@@ -305,7 +311,7 @@ mod tests {
     fn extend() {
         let mut one = non_empty_vec![10];
         let multiple = non_empty_vec![10, 20, 30, 40, 50];
-        one.extend(multiple.iter());
+        one.extend(multiple);
 
         assert_eq!(one, non_empty_vec![10, 10, 20, 30, 40, 50]);
     }
